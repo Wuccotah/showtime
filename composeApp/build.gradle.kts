@@ -86,6 +86,11 @@ kotlin {
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
 
+            // DataStore
+            implementation(libs.datastore.core)
+            implementation(libs.datastore.core.okio)
+            implementation(libs.okio)
+
             // Image Loading
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor3)
