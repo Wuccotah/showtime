@@ -39,7 +39,7 @@ private fun MovieDetailsScreen(
     onBack: () -> Unit = {},
 ) {
     when {
-        state.isLoading -> {
+        state.isRefreshing && state.movie == null -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
@@ -58,9 +58,9 @@ private fun MovieDetailsScreen(
         state.movie != null -> {
             MovieDetails(
                 movie = state.movie,
-                director = state.director?.name,
+                director = state.movie.directorName,
                 actors = state.actors.map { it.name },
-                trailerUrl = state.trailerUrl,
+                trailerUrl = state.movie.trailerUrl,
                 backdropImages = state.backdropImages,
                 onBack = onBack,
             )

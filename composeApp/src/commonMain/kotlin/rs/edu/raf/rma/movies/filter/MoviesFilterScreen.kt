@@ -175,7 +175,7 @@ private fun MoviesFilterScreen(
             SectionDivider()
 
             SectionHeader(title = "GENRE")
-            if (state.isLoadingGenres) {
+            if (state.isRefreshing) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

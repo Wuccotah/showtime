@@ -41,4 +41,6 @@ data class MovieItem(
     val homepage: String? = null,
     val genres: List<Genre> = emptyList(),
     val collection: MovieCollection? = null,
+    val directorName: String? = null,
+    val trailerUrl: String? = null,
 )

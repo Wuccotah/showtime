@@ -25,4 +25,7 @@ data class MovieEntity(
     val tmdbVotes: Int? = null,
     val backdropPath: String? = null,
     val homepage: String? = null,
+    val directorName: String? = null,
+    val trailerUrl: String? = null,
+    val backdropPaths: String? = null,
 )

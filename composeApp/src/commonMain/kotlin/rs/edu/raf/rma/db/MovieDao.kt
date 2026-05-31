@@ -27,6 +27,9 @@ interface MovieDao {
     @Query("SELECT * FROM movies WHERE imdbId = :imdbId")
     fun observeMovie(imdbId: String): Flow<MovieWithGenresAndActors?>
 
+    @Query("SELECT backdropPaths FROM movies WHERE imdbId = :imdbId")
+    fun observeMovieBackdrops(imdbId: String): Flow<String?>
+
     // genres
 
     @Upsert

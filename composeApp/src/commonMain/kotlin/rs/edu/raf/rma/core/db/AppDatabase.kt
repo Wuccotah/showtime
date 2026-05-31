@@ -28,7 +28,7 @@ import rs.edu.raf.rma.db.WatchlistEntity
         WatchlistEntity::class,
         QuizSessionEntity::class,
     ],
-    version = 1,
+    version = 3,
     exportSchema = true,
 )
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -46,6 +46,7 @@ fun buildAppDatabase(
     builder: RoomDatabase.Builder<AppDatabase>,
 ): AppDatabase {
     return builder
+        .fallbackToDestructiveMigration(dropAllTables = true)
         .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()

@@ -6,6 +6,7 @@ import rs.edu.raf.rma.core.db.AppDatabase
 import rs.edu.raf.rma.db.FavoriteEntity
 import rs.edu.raf.rma.db.QuizSessionEntity
 import rs.edu.raf.rma.db.WatchlistEntity
+import rs.edu.raf.rma.demo.Genre
 import rs.edu.raf.rma.demo.MovieItem
 import rs.edu.raf.rma.networking.MoviesApi
 import rs.edu.raf.rma.networking.model.PersonSummary
@@ -27,6 +28,11 @@ class MovieRepositoryImpl(
 
     override fun observeMovieActors(imdbId: String): Flow<List<PersonSummary>> =
         dao.observeMovie(imdbId).map { it?.actors?.map { a -> a.toDomain() } ?: emptyList() }
+
+    override fun observeMovieBackdrops(imdbId: String): Flow<List<String>> =
+        dao.observeMovieBackdrops(imdbId).map { raw ->
+            raw?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
+        }
 
     override suspend fun refreshMovies(
         query: String?,
@@ -57,15 +63,42 @@ class MovieRepositoryImpl(
     override suspend fun refreshMovieDetail(imdbId: String) {
         val movie = moviesApi.getMovie(imdbId)
         val cast = runCatching { moviesApi.getCast(imdbId) }.getOrNull()
-        val actors = cast?.items?.map { it.toEntity() } ?: emptyList()
+        val videos = runCatching { moviesApi.getVideos(imdbId) }.getOrNull()
+        val images = runCatching { moviesApi.getImages(imdbId, type = "backdrop") }.getOrNull()
+
+        val directorName = cast?.items
+            ?.firstOrNull { it.department == "Directing" }
+            ?.name
+
+        val trailerUrl = videos
+            ?.firstOrNull { it.site == "YouTube" && it.type == "Trailer" && it.key != null }
+            ?.key
+            ?.let { "https://www.youtube.com/watch?v=$it" }
+
+        val backdropPaths = images?.backdrops
+            ?.mapNotNull { it.filePath }
+            ?.take(10)
+            ?.joinToString(",")
+
+        val actorPersons = cast?.items?.filter { it.department != "Directing" } ?: emptyList()
+        val actors = actorPersons.map { it.toEntity() }
+
+        val entity = movie.toEntity().copy(
+            directorName = directorName,
+            trailerUrl = trailerUrl,
+            backdropPaths = backdropPaths,
+        )
+
         dao.refreshMovieDetailTransaction(
-            movie = movie.toEntity(),
+            movie = entity,
             genres = movie.toGenreEntities(),
             genreLinks = movie.toGenreLinks(),
             actors = actors,
             actorLinks = movie.toActorLinks(actors),
         )
     }
+
+    override suspend fun getGenres(): List<Genre> = moviesApi.getGenres()
 
     // favorites
 

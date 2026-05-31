@@ -54,7 +54,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import rs.edu.raf.rma.networking.model.MovieListItem
+import rs.edu.raf.rma.demo.MovieItem
 
 private const val IMAGE_BASE_URL = "https://image.tmdb.org/t/p/"
 
@@ -87,7 +87,7 @@ fun MoviesListScreen(
         onMovieClick = { viewModel.setEvent(MoviesListContract.UiEvent.OpenMovieDetails(it)) },
         onFilterClick = { viewModel.setEvent(MoviesListContract.UiEvent.OpenFilter) },
         onSortOptionSelected = viewModel::setSortOption,
-        onRetry = viewModel::loadMovies,
+        onRetry = { viewModel.setEvent(MoviesListContract.UiEvent.Refresh) },
     )
 }
 
@@ -159,7 +159,7 @@ private fun MoviesListScreen(
                     .fillMaxWidth(),
             ) {
                 when {
-                    state.isLoading -> {
+                    state.isRefreshing && state.movies.isEmpty() -> {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center),
                             color = AccentGreen,
@@ -290,7 +290,7 @@ private fun SortBar(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MovieListItem(
-    movie: MovieListItem,
+    movie: MovieItem,
     onClick: () -> Unit,
 ) {
     Row(

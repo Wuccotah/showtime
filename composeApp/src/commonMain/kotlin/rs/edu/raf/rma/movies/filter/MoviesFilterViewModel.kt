@@ -10,12 +10,11 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import rs.edu.raf.rma.movies.data.MovieRepository
 import rs.edu.raf.rma.movies.list.MoviesListContract
-import rs.edu.raf.rma.movies.repository.MoviesRepository
 
 class MoviesFilterViewModel(
-    private val repository: MoviesRepository,
+    private val repository: MovieRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MoviesFilterContract.UiState())
@@ -30,6 +29,18 @@ class MoviesFilterViewModel(
         viewModelScope.launch { events.emit(event) }
     }
 
+    fun alternativeSetEvent(event: MoviesFilterContract.UiEvent) {
+        viewModelScope.launch {
+            when (event) {
+                MoviesFilterContract.UiEvent.NavigateBack ->
+                    setEffect(MoviesFilterContract.SideEffect.NavigateBack)
+                MoviesFilterContract.UiEvent.ApplyFilters ->
+                    setEffect(MoviesFilterContract.SideEffect.FiltersApplied(buildFilters()))
+                MoviesFilterContract.UiEvent.ClearAll -> clearAll()
+            }
+        }
+    }
+
     private val _effects = MutableSharedFlow<MoviesFilterContract.SideEffect>()
     val effects = _effects.asSharedFlow()
     private fun setEffect(effect: MoviesFilterContract.SideEffect) {
@@ -37,25 +48,31 @@ class MoviesFilterViewModel(
     }
 
     init {
-        loadGenres()
         observeEvents()
+        loadGenres()
     }
 
     private fun observeEvents() {
         viewModelScope.launch {
             events.collect { event ->
                 when (event) {
-                    MoviesFilterContract.UiEvent.NavigateBack -> {
+                    MoviesFilterContract.UiEvent.NavigateBack ->
                         setEffect(MoviesFilterContract.SideEffect.NavigateBack)
-                    }
-                    MoviesFilterContract.UiEvent.ApplyFilters -> {
+                    MoviesFilterContract.UiEvent.ApplyFilters ->
                         setEffect(MoviesFilterContract.SideEffect.FiltersApplied(buildFilters()))
-                    }
-                    MoviesFilterContract.UiEvent.ClearAll -> {
-                        clearAll()
-                    }
+                    MoviesFilterContract.UiEvent.ClearAll -> clearAll()
                 }
             }
+        }
+    }
+
+    private fun loadGenres() {
+        viewModelScope.launch {
+            setState { copy(isRefreshing = true) }
+            runCatching { repository.getGenres() }
+                .onSuccess { setState { copy(genres = it) } }
+                .onFailure { setState { copy(isRefreshing = false) } }
+            setState { copy(isRefreshing = false) }
         }
     }
 
@@ -71,25 +88,11 @@ class MoviesFilterViewModel(
         }
     }
 
-    fun setQuery(query: String) {
-        setState { copy(pendingQuery = query) }
-    }
-
-    fun setGenre(genreId: Int?) {
-        setState { copy(pendingGenreId = genreId) }
-    }
-
-    fun setMinYear(year: String) {
-        setState { copy(pendingMinYear = year) }
-    }
-
-    fun setMaxYear(year: String) {
-        setState { copy(pendingMaxYear = year) }
-    }
-
-    fun setMinRating(rating: Float) {
-        setState { copy(pendingMinRating = rating) }
-    }
+    fun setQuery(query: String) { setState { copy(pendingQuery = query) } }
+    fun setGenre(genreId: Int?) { setState { copy(pendingGenreId = genreId) } }
+    fun setMinYear(year: String) { setState { copy(pendingMinYear = year) } }
+    fun setMaxYear(year: String) { setState { copy(pendingMaxYear = year) } }
+    fun setMinRating(rating: Float) { setState { copy(pendingMinRating = rating) } }
 
     fun clearAll() {
         setState {
@@ -112,22 +115,5 @@ class MoviesFilterViewModel(
             maxYear = s.pendingMaxYear.toIntOrNull(),
             minRating = s.pendingMinRating.takeIf { it > 0f },
         )
-    }
-
-    private fun loadGenres() {
-        viewModelScope.launch {
-            setState { copy(isLoadingGenres = true) }
-            val result = withContext(Dispatchers.IO) {
-                runCatching { repository.getGenres() }
-            }
-            result.fold(
-                onSuccess = { genres ->
-                    setState { copy(isLoadingGenres = false, genres = genres) }
-                },
-                onFailure = {
-                    setState { copy(isLoadingGenres = false) }
-                },
-            )
-        }
     }
 }

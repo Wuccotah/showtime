@@ -1,6 +1,7 @@
 package rs.edu.raf.rma.movies.data
 
 import kotlinx.coroutines.flow.Flow
+import rs.edu.raf.rma.demo.Genre
 import rs.edu.raf.rma.demo.MovieItem
 import rs.edu.raf.rma.networking.model.PersonSummary
 
@@ -11,6 +12,7 @@ interface MovieRepository {
     fun observeMovies(): Flow<List<MovieItem>>
     fun observeMovie(imdbId: String): Flow<MovieItem?>
     fun observeMovieActors(imdbId: String): Flow<List<PersonSummary>>
+    fun observeMovieBackdrops(imdbId: String): Flow<List<String>>
 
     suspend fun refreshMovies(
         query: String? = null,
@@ -24,6 +26,8 @@ interface MovieRepository {
     )
 
     suspend fun refreshMovieDetail(imdbId: String)
+
+    suspend fun getGenres(): List<Genre>
 
     // favorites
 

@@ -8,9 +8,7 @@ import org.koin.dsl.module
 actual fun databaseModule() = module {
     single<AppDatabase> {
         buildAppDatabase(
-            builder = getDatabaseBuilder(
-                context = get(),
-            )
+            builder = getDatabaseBuilder(get()).fallbackToDestructiveMigration(),
         )
     }
 }

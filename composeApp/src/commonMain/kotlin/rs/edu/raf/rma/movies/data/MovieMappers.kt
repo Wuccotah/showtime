@@ -42,6 +42,8 @@ fun MovieItem.toEntity() = MovieEntity(
     tmdbVotes = tmdbVotes,
     backdropPath = backdropPath,
     homepage = homepage,
+    directorName = directorName,
+    trailerUrl = trailerUrl,
 )
 
 fun Genre.toEntity() = GenreEntity(id = id, name = name)
@@ -82,6 +84,8 @@ fun MovieWithGenres.toDomain() = MovieItem(
     backdropPath = movie.backdropPath,
     homepage = movie.homepage,
     genres = genres.map { it.toDomain() },
+    directorName = movie.directorName,
+    trailerUrl = movie.trailerUrl,
 )
 
 fun MovieWithGenresAndActors.toDomain() = MovieItem(
@@ -106,6 +110,8 @@ fun MovieWithGenresAndActors.toDomain() = MovieItem(
     backdropPath = movie.backdropPath,
     homepage = movie.homepage,
     genres = genres.map { it.toDomain() },
+    directorName = movie.directorName,
+    trailerUrl = movie.trailerUrl,
 )
 
 fun MovieListItem.toGenreEntities(): List<GenreEntity> =

@@ -1,6 +1,6 @@
 package rs.edu.raf.rma.movies.list
 
-import rs.edu.raf.rma.networking.model.MovieListItem
+import rs.edu.raf.rma.demo.MovieItem
 
 interface MoviesListContract {
 
@@ -29,9 +29,9 @@ interface MoviesListContract {
     }
 
     data class UiState(
-        val movies: List<MovieListItem> = emptyList(),
+        val movies: List<MovieItem> = emptyList(),
         val totalCount: Int = 0,
-        val isLoading: Boolean = true,
+        val isRefreshing: Boolean = false,
         val error: Throwable? = null,
         val sortOption: SortOption = SortOption.Rating,
         val filters: ActiveFilters = ActiveFilters(),
@@ -41,6 +41,7 @@ interface MoviesListContract {
 
     sealed class UiEvent {
         data object OpenFilter : UiEvent()
+        data object Refresh : UiEvent()
         data class OpenMovieDetails(val imdbId: String) : UiEvent()
     }
 

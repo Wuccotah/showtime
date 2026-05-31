@@ -7,7 +7,7 @@ interface MoviesFilterContract {
 
     data class UiState(
         val genres: List<Genre> = emptyList(),
-        val isLoadingGenres: Boolean = true,
+        val isRefreshing: Boolean = false,
         val pendingQuery: String = "",
         val pendingGenreId: Int? = null,
         val pendingMinYear: String = "",

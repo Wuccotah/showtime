@@ -13,12 +13,13 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import rs.edu.raf.rma.movies.repository.MoviesRepository
+import rs.edu.raf.rma.movies.data.MovieRepository
+import rs.edu.raf.rma.movies.movieIdOrThrow
+import rs.edu.raf.rma.networking.model.ImageItem
 
 class MovieDetailsViewModel(
     savedStateHandle: SavedStateHandle,
-    private val repository: MoviesRepository,
+    private val repository: MovieRepository,
 ) : ViewModel() {
 
     private val movieId = savedStateHandle.movieIdOrThrow
@@ -35,6 +36,16 @@ class MovieDetailsViewModel(
         viewModelScope.launch { events.emit(event) }
     }
 
+    fun alternativeSetEvent(event: MovieDetailsContract.UiEvent) {
+        viewModelScope.launch {
+            when (event) {
+                MovieDetailsContract.UiEvent.NavigateBack ->
+                    setEffect(MovieDetailsContract.SideEffect.NavigateBack)
+                MovieDetailsContract.UiEvent.Refresh -> refresh()
+            }
+        }
+    }
+
     private val _effects = MutableSharedFlow<MovieDetailsContract.SideEffect>()
     val effects = _effects.asSharedFlow()
     private fun setEffect(effect: MovieDetailsContract.SideEffect) {
@@ -42,68 +53,55 @@ class MovieDetailsViewModel(
     }
 
     init {
-        loadData()
         observeEvents()
+        observeMovie()
+        observeActors()
+        observeBackdrops()
+        refresh()
     }
 
     private fun observeEvents() {
         viewModelScope.launch {
             events.collect { event ->
                 when (event) {
-                    MovieDetailsContract.UiEvent.NavigateBack -> {
+                    MovieDetailsContract.UiEvent.NavigateBack ->
                         setEffect(MovieDetailsContract.SideEffect.NavigateBack)
-                    }
+                    MovieDetailsContract.UiEvent.Refresh -> refresh()
                 }
             }
         }
     }
 
-    private fun loadData() {
+    private fun observeMovie() {
         viewModelScope.launch {
-            setState { copy(isLoading = true) }
-            val movieDeferred = withContext(Dispatchers.IO) {
-                async { runCatching { repository.getMovie(movieId) } }
+            repository.observeMovie(movieId).collect { movie ->
+                setState { copy(movie = movie) }
             }
-            val castDeferred = withContext(Dispatchers.IO) {
-                async { runCatching { repository.getCast(movieId) } }
-            }
-            val videosDeferred = withContext(Dispatchers.IO) {
-                async { runCatching { repository.getVideos(movieId) } }
-            }
-            val imagesDeferred = withContext(Dispatchers.IO) {
-                async { runCatching { repository.getImages(movieId) } }
-            }
+        }
+    }
 
-            val movie = movieDeferred.await()
-            val cast = castDeferred.await()
-            val videos = videosDeferred.await()
-            val images = imagesDeferred.await()
+    private fun observeActors() {
+        viewModelScope.launch {
+            repository.observeMovieActors(movieId).collect { actors ->
+                setState { copy(actors = actors) }
+            }
+        }
+    }
 
-            movie.fold(
-                onSuccess = { m ->
-                    val castItems = cast.getOrNull()?.items ?: emptyList()
-                    val director = castItems.firstOrNull { it.department == "Directing" }
-                    val actors = castItems.filter { it.department == "Acting" }.take(10)
-                    val trailerUrl = videos.getOrNull()
-                        ?.firstOrNull { it.key != null }
-                        ?.key
-                        ?.let { "https://www.youtube.com/watch?v=$it" }
-                    val backdropImages = images.getOrNull()?.take(5) ?: emptyList()
-                    setState {
-                        copy(
-                            isLoading = false,
-                            movie = m,
-                            director = director,
-                            actors = actors,
-                            trailerUrl = trailerUrl,
-                            backdropImages = backdropImages,
-                        )
-                    }
-                },
-                onFailure = { error ->
-                    setState { copy(isLoading = false, error = error) }
-                }
-            )
+    private fun observeBackdrops() {
+        viewModelScope.launch {
+            repository.observeMovieBackdrops(movieId).collect { paths ->
+                setState { copy(backdropImages = paths.map { ImageItem(filePath = it) }) }
+            }
+        }
+    }
+
+    private fun refresh() {
+        viewModelScope.launch {
+            setState { copy(isRefreshing = true, error = null) }
+            runCatching { repository.refreshMovieDetail(movieId) }
+                .onFailure { setState { copy(error = it) } }
+            setState { copy(isRefreshing = false) }
         }
     }
 }
