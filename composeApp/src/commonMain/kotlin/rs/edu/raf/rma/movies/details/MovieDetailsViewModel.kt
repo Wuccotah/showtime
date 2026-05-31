@@ -42,6 +42,8 @@ class MovieDetailsViewModel(
                 MovieDetailsContract.UiEvent.NavigateBack ->
                     setEffect(MovieDetailsContract.SideEffect.NavigateBack)
                 MovieDetailsContract.UiEvent.Refresh -> refresh()
+                MovieDetailsContract.UiEvent.ToggleFavorite -> toggleFavorite()
+                MovieDetailsContract.UiEvent.ToggleWatchlist -> toggleWatchlist()
             }
         }
     }
@@ -57,6 +59,8 @@ class MovieDetailsViewModel(
         observeMovie()
         observeActors()
         observeBackdrops()
+        observeIsFavorite()
+        observeIsOnWatchlist()
         refresh()
     }
 
@@ -67,6 +71,8 @@ class MovieDetailsViewModel(
                     MovieDetailsContract.UiEvent.NavigateBack ->
                         setEffect(MovieDetailsContract.SideEffect.NavigateBack)
                     MovieDetailsContract.UiEvent.Refresh -> refresh()
+                    MovieDetailsContract.UiEvent.ToggleFavorite -> toggleFavorite()
+                    MovieDetailsContract.UiEvent.ToggleWatchlist -> toggleWatchlist()
                 }
             }
         }
@@ -93,6 +99,36 @@ class MovieDetailsViewModel(
             repository.observeMovieBackdrops(movieId).collect { paths ->
                 setState { copy(backdropImages = paths.map { ImageItem(filePath = it) }) }
             }
+        }
+    }
+
+    private fun observeIsFavorite() {
+        viewModelScope.launch {
+            repository.isFavorite(movieId).collect { isFav ->
+                setState { copy(isFavorite = isFav) }
+            }
+        }
+    }
+
+    private fun observeIsOnWatchlist() {
+        viewModelScope.launch {
+            repository.isOnWatchlist(movieId).collect { isWatchlisted ->
+                setState { copy(isOnWatchlist = isWatchlisted) }
+            }
+        }
+    }
+
+    private fun toggleFavorite() {
+        viewModelScope.launch {
+            val add = !_state.value.isFavorite
+            runCatching { repository.toggleFavorite(movieId, add) }
+        }
+    }
+
+    private fun toggleWatchlist() {
+        viewModelScope.launch {
+            val add = !_state.value.isOnWatchlist
+            runCatching { repository.toggleWatchlist(movieId, add) }
         }
     }
 

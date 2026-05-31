@@ -24,6 +24,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.HorizontalDivider
@@ -66,7 +70,11 @@ fun MovieDetails(
     actors: List<String> = emptyList(),
     trailerUrl: String? = null,
     backdropImages: List<ImageItem> = emptyList(),
+    isFavorite: Boolean = false,
+    isOnWatchlist: Boolean = false,
     onBack: () -> Unit = {},
+    onToggleFavorite: () -> Unit = {},
+    onToggleWatchlist: () -> Unit = {},
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -345,6 +353,43 @@ fun MovieDetails(
                 tint = Color.White,
                 modifier = Modifier.size(20.dp),
             )
+        }
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            IconButton(
+                onClick = onToggleWatchlist,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.5f)),
+            ) {
+                Icon(
+                    imageVector = if (isOnWatchlist) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                    contentDescription = if (isOnWatchlist) "Remove from watchlist" else "Add to watchlist",
+                    tint = if (isOnWatchlist) AccentBlue else Color.White,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            IconButton(
+                onClick = onToggleFavorite,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.5f)),
+            ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                    tint = if (isFavorite) AccentGreen else Color.White,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
         }
     }
 }

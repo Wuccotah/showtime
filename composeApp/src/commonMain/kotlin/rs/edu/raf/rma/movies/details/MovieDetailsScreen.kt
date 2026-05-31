@@ -30,6 +30,8 @@ fun MovieDetailsScreen(
     MovieDetailsScreen(
         state = state,
         onBack = { viewModel.setEvent(MovieDetailsContract.UiEvent.NavigateBack) },
+        onToggleFavorite = { viewModel.setEvent(MovieDetailsContract.UiEvent.ToggleFavorite) },
+        onToggleWatchlist = { viewModel.setEvent(MovieDetailsContract.UiEvent.ToggleWatchlist) },
     )
 }
 
@@ -37,6 +39,8 @@ fun MovieDetailsScreen(
 private fun MovieDetailsScreen(
     state: MovieDetailsContract.UiState,
     onBack: () -> Unit = {},
+    onToggleFavorite: () -> Unit = {},
+    onToggleWatchlist: () -> Unit = {},
 ) {
     when {
         state.isRefreshing && state.movie == null -> {
@@ -62,7 +66,11 @@ private fun MovieDetailsScreen(
                 actors = state.actors.map { it.name },
                 trailerUrl = state.movie.trailerUrl,
                 backdropImages = state.backdropImages,
+                isFavorite = state.isFavorite,
+                isOnWatchlist = state.isOnWatchlist,
                 onBack = onBack,
+                onToggleFavorite = onToggleFavorite,
+                onToggleWatchlist = onToggleWatchlist,
             )
         }
     }
