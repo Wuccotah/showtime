@@ -10,6 +10,8 @@ import rs.edu.raf.rma.movies.favorites.FavoritesViewModel
 import rs.edu.raf.rma.movies.filter.MoviesFilterViewModel
 import rs.edu.raf.rma.movies.list.MoviesListViewModel
 import rs.edu.raf.rma.movies.watchlist.WatchlistViewModel
+import rs.edu.raf.rma.profile.ProfileViewModel
+import rs.edu.raf.rma.quiz.QuizViewModel
 
 val moviesModule = module {
     single { MovieRepositoryImpl(appDatabase = get(), moviesApi = get()) } bind MovieRepository::class
@@ -18,4 +20,6 @@ val moviesModule = module {
     viewModelOf(::MoviesFilterViewModel)
     viewModelOf(::FavoritesViewModel)
     viewModelOf(::WatchlistViewModel)
+    viewModelOf(::ProfileViewModel)
+    viewModelOf(::QuizViewModel)
 }

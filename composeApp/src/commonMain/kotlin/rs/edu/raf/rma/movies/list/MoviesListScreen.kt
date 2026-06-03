@@ -102,8 +102,10 @@ private fun MoviesListScreen(
 ) {
     Scaffold(
         containerColor = BgDark,
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0),
         topBar = {
             TopAppBar(
+                windowInsets = androidx.compose.foundation.layout.WindowInsets(0),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = BgDark,
                     titleContentColor = TextPrimary,
@@ -111,7 +113,7 @@ private fun MoviesListScreen(
                 ),
                 title = {
                     Text(
-                        text = "Premiere",
+                        text = "Showtime",
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary,
                     )

@@ -47,6 +47,8 @@ interface MovieRepository {
 
     // quiz
 
+    suspend fun countMoviesWithImages(): Int
+
     suspend fun insertQuizSession(
         score: Float,
         correctAnswers: Int,
@@ -54,6 +56,9 @@ interface MovieRepository {
         timeUsedSeconds: Int,
         playedAt: Long,
     )
+
+    suspend fun submitQuizResult(score: Float)
+
     fun observeBestScore(): Flow<Float?>
     fun observeQuizCount(): Flow<Int>
 

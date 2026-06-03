@@ -341,7 +341,6 @@ fun MovieDetails(
             onClick = onBack,
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(8.dp)
                 .size(40.dp)
                 .clip(CircleShape)
@@ -358,7 +357,6 @@ fun MovieDetails(
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(8.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {

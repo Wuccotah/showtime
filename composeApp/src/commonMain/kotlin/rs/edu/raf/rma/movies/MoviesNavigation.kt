@@ -1,19 +1,17 @@
 package rs.edu.raf.rma.movies
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Quiz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -23,11 +21,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -48,6 +44,11 @@ import rs.edu.raf.rma.movies.list.MoviesListScreen
 import rs.edu.raf.rma.movies.list.MoviesListViewModel
 import rs.edu.raf.rma.movies.watchlist.WatchlistScreen
 import rs.edu.raf.rma.movies.watchlist.WatchlistViewModel
+import rs.edu.raf.rma.profile.ProfileScreen
+import rs.edu.raf.rma.profile.ProfileViewModel
+import rs.edu.raf.rma.quiz.QuizResultScreen
+import rs.edu.raf.rma.quiz.QuizScreen
+import rs.edu.raf.rma.quiz.QuizViewModel
 
 private val BgDark = Color(0xFF14181C)
 private val BgSurface = Color(0xFF22272E)
@@ -64,6 +65,7 @@ private enum class BottomTab(
     Movies("movies", "Movies", Icons.Filled.Home, Icons.Outlined.Home),
     Favorites("favorites", "Favorites", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder),
     Watchlist("watchlist", "Watchlist", Icons.Filled.Bookmark, Icons.Outlined.BookmarkBorder),
+    Quiz("quiz", "Quiz", Icons.Filled.Quiz, Icons.Outlined.Quiz),
     Profile("profile", "Profile", Icons.Filled.Person, Icons.Outlined.Person),
 }
 
@@ -171,18 +173,49 @@ fun MoviesNavigation() {
                 )
             }
 
+            composable(route = "quiz") {
+                val viewModel = koinViewModel<QuizViewModel>()
+                QuizScreen(
+                    viewModel = viewModel,
+                    onNavigateToResult = { score, correct, total, timeUsed ->
+                        navController.navigate("quiz/result/$score/$correct/$total/$timeUsed") {
+                            popUpTo("quiz") { inclusive = true }
+                        }
+                    },
+                    onNavigateBack = { navController.navigateUp() },
+                )
+            }
+
+            composable(
+                route = "quiz/result/{score}/{correct}/{total}/{timeUsed}",
+                arguments = listOf(
+                    navArgument("score") { type = NavType.FloatType },
+                    navArgument("correct") { type = NavType.IntType },
+                    navArgument("total") { type = NavType.IntType },
+                    navArgument("timeUsed") { type = NavType.IntType },
+                ),
+            ) { backStack ->
+                val score = backStack.arguments?.getFloat("score") ?: 0f
+                val correct = backStack.arguments?.getInt("correct") ?: 0
+                val total = backStack.arguments?.getInt("total") ?: 0
+                val timeUsed = backStack.arguments?.getInt("timeUsed") ?: 0
+                QuizResultScreen(
+                    score = score,
+                    correctCount = correct,
+                    totalQuestions = total,
+                    timeUsedSeconds = timeUsed,
+                    onDone = {
+                        navController.navigate("quiz") {
+                            popUpTo("quiz") { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+
             composable(route = "profile") {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(BgDark),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Profile", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        Text("Coming soon", color = TextMuted, fontSize = 14.sp)
-                    }
-                }
+                val viewModel = koinViewModel<ProfileViewModel>()
+                ProfileScreen(viewModel = viewModel)
             }
         }
     }

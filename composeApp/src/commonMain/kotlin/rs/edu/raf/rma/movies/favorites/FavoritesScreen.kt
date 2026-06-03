@@ -94,6 +94,7 @@ private fun FavoritesScreen(
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = BgDark),
+            windowInsets = androidx.compose.foundation.layout.WindowInsets(0),
         )
 
         HorizontalDivider(color = BgSurface)

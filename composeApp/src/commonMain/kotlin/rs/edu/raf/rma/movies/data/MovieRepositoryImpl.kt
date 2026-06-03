@@ -112,18 +112,21 @@ class MovieRepositoryImpl(
         dao.observeFavoritesCount()
 
     override suspend fun syncFavorites() {
-        // TODO: implement when favorites API endpoint is available
+        runCatching { moviesApi.getFavorites() }
+            .onSuccess { items ->
+                dao.replaceFavorites(items.map { it.imdbId })
+            }
     }
 
     override suspend fun toggleFavorite(movieId: String, add: Boolean) {
         if (add) {
             dao.insertFavorite(FavoriteEntity(movieId))
-            runCatching { /* TODO: moviesApi.addFavorite(movieId) */ }
-                .onFailure { dao.deleteFavorite(movieId) }
+            // runCatching { moviesApi.addFavorite(movieId) }
+            //     .onFailure { dao.deleteFavorite(movieId) }
         } else {
             dao.deleteFavorite(movieId)
-            runCatching { /* TODO: moviesApi.removeFavorite(movieId) */ }
-                .onFailure { dao.insertFavorite(FavoriteEntity(movieId)) }
+            // runCatching { moviesApi.removeFavorite(movieId) }
+            //     .onFailure { dao.insertFavorite(FavoriteEntity(movieId)) }
         }
     }
 
@@ -139,22 +142,27 @@ class MovieRepositoryImpl(
         dao.observeWatchlistCount()
 
     override suspend fun syncWatchlist() {
-        // TODO: implement when watchlist API endpoint is available
+        runCatching { moviesApi.getWatchlist() }
+            .onSuccess { items ->
+                dao.replaceWatchlist(items.map { it.imdbId })
+            }
     }
 
     override suspend fun toggleWatchlist(movieId: String, add: Boolean) {
         if (add) {
             dao.insertWatchlist(WatchlistEntity(movieId))
-            runCatching { /* TODO: moviesApi.addToWatchlist(movieId) */ }
-                .onFailure { dao.deleteWatchlist(movieId) }
+            // runCatching { moviesApi.addToWatchlist(movieId) }
+            //     .onFailure { dao.deleteWatchlist(movieId) }
         } else {
             dao.deleteWatchlist(movieId)
-            runCatching { /* TODO: moviesApi.removeFromWatchlist(movieId) */ }
-                .onFailure { dao.insertWatchlist(WatchlistEntity(movieId)) }
+            // runCatching { moviesApi.removeFromWatchlist(movieId) }
+            //     .onFailure { dao.insertWatchlist(WatchlistEntity(movieId)) }
         }
     }
 
     // quiz
+
+    override suspend fun countMoviesWithImages(): Int = dao.countMoviesWithImages()
 
     override suspend fun insertQuizSession(
         score: Float,
@@ -172,6 +180,12 @@ class MovieRepositoryImpl(
                 playedAt = playedAt,
             )
         )
+    }
+
+    override suspend fun submitQuizResult(score: Float) {
+        runCatching {
+            moviesApi.submitQuizResult(rs.edu.raf.rma.networking.model.QuizSubmitBody(score = score))
+        }
     }
 
     override fun observeBestScore(): Flow<Float?> = dao.observeBestScore()

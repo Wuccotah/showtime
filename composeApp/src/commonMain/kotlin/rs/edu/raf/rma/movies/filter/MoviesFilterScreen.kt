@@ -121,8 +121,10 @@ private fun MoviesFilterScreen(
 
     Scaffold(
         containerColor = BgDark,
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0),
         topBar = {
             TopAppBar(
+                windowInsets = androidx.compose.foundation.layout.WindowInsets(0),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = BgDark,
                     titleContentColor = TextPrimary,

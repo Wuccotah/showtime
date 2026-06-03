@@ -44,6 +44,11 @@ class WatchlistViewModel(
     init {
         observeEvents()
         observeWatchlist()
+        sync()
+    }
+
+    private fun sync() {
+        viewModelScope.launch { repository.syncWatchlist() }
     }
 
     private fun observeEvents() {

@@ -44,6 +44,11 @@ class FavoritesViewModel(
     init {
         observeEvents()
         observeFavorites()
+        sync()
+    }
+
+    private fun sync() {
+        viewModelScope.launch { repository.syncFavorites() }
     }
 
     private fun observeEvents() {

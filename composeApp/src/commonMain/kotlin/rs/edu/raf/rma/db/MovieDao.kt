@@ -59,6 +59,33 @@ interface MovieDao {
     """)
     suspend fun getActorsNotInMovie(movieId: String, limit: Int = 20): List<ActorEntity>
 
+    @Query("SELECT * FROM actors LIMIT :limit")
+    suspend fun getAllActors(limit: Int = 200): List<ActorEntity>
+
+    // quiz pool
+
+    @Query("SELECT * FROM movies WHERE posterPath IS NOT NULL AND posterPath != '' ORDER BY RANDOM()")
+    suspend fun getMoviesWithPosters(): List<MovieEntity>
+
+    @Query("""
+        SELECT * FROM movies
+        WHERE (posterPath IS NOT NULL AND posterPath != '')
+           OR (backdropPaths IS NOT NULL AND backdropPaths != '')
+        ORDER BY RANDOM()
+    """)
+    suspend fun getMoviesWithImages(): List<MovieEntity>
+
+    @Query("""
+        SELECT COUNT(*) FROM movies
+        WHERE (posterPath IS NOT NULL AND posterPath != '')
+           OR (backdropPaths IS NOT NULL AND backdropPaths != '')
+    """)
+    suspend fun countMoviesWithImages(): Int
+
+    @Transaction
+    @Query("SELECT * FROM movies WHERE imdbId = :imdbId")
+    suspend fun getMovieWithActors(imdbId: String): MovieWithGenresAndActors?
+
     // favorites
 
     @Upsert
