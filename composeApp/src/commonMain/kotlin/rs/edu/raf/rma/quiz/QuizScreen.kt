@@ -16,7 +16,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Quiz
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -67,7 +73,9 @@ fun QuizScreen(
         }
     }
 
-    BackHandler { viewModel.setEvent(QuizEvent.ShowAbandonDialog) }
+    BackHandler(enabled = !state.isNotStarted) {
+        viewModel.setEvent(QuizEvent.ShowAbandonDialog)
+    }
 
     if (state.showAbandonDialog) {
         AlertDialog(
@@ -94,6 +102,10 @@ fun QuizScreen(
             .background(BgDark),
     ) {
         when {
+            state.isNotStarted -> {
+                QuizStartScreen(onStart = { viewModel.setEvent(QuizEvent.StartQuiz) })
+            }
+
             state.isGenerating -> {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
@@ -125,6 +137,7 @@ fun QuizScreen(
                         timeRemaining = state.timeRemainingSeconds,
                         currentIndex = state.currentIndex,
                         total = state.totalQuestions,
+                        onClose = { viewModel.setEvent(QuizEvent.ShowAbandonDialog) },
                     )
 
                     AnimatedContent(
@@ -149,7 +162,7 @@ fun QuizScreen(
 }
 
 @Composable
-private fun QuizHeader(timeRemaining: Int, currentIndex: Int, total: Int) {
+private fun QuizHeader(timeRemaining: Int, currentIndex: Int, total: Int, onClose: () -> Unit) {
     val timerFraction = timeRemaining / 60f
     val timerColor = when {
         timerFraction > 0.5f -> AccentGreen
@@ -161,7 +174,7 @@ private fun QuizHeader(timeRemaining: Int, currentIndex: Int, total: Int) {
         modifier = Modifier
             .fillMaxWidth()
             .background(BgCard)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 12.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -173,12 +186,23 @@ private fun QuizHeader(timeRemaining: Int, currentIndex: Int, total: Int) {
                 color = TextMuted,
                 fontSize = 13.sp,
             )
-            Text(
-                text = "$timeRemaining s",
-                color = timerColor,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "$timeRemaining s",
+                    color = timerColor,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(Modifier.width(4.dp))
+                IconButton(onClick = onClose, modifier = Modifier.size(36.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Abandon quiz",
+                        tint = TextMuted,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
         }
         Spacer(Modifier.height(6.dp))
         LinearProgressIndicator(
@@ -271,6 +295,67 @@ private fun QuestionCard(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun QuizStartScreen(onStart: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Icon(
+            imageVector = Icons.Default.Quiz,
+            contentDescription = null,
+            tint = AccentGreen,
+            modifier = Modifier.size(72.dp),
+        )
+
+        Spacer(Modifier.height(24.dp))
+
+        Text(
+            text = "Movie Quiz",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary,
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        Text(
+            text = "10 questions · 60 seconds",
+            fontSize = 14.sp,
+            color = TextMuted,
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            text = "Guess the movie, year, or lead actor from a screenshot. Answer quickly — time is part of your score.",
+            fontSize = 13.sp,
+            color = TextMuted,
+            textAlign = TextAlign.Center,
+            lineHeight = 20.sp,
+        )
+
+        Spacer(Modifier.height(40.dp))
+
+        Button(
+            onClick = onStart,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = AccentGreen,
+                contentColor = Color.Black,
+            ),
+            shape = RoundedCornerShape(10.dp),
+        ) {
+            Text("Start Quiz", fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
     }
 }

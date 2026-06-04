@@ -1,6 +1,11 @@
 package rs.edu.raf.rma.movies
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Favorite
@@ -79,6 +84,35 @@ fun MoviesNavigation() {
 
     val showBottomBar = currentRoute in rootRoutes
 
+    var pendingTab by remember { mutableStateOf<BottomTab?>(null) }
+
+    if (pendingTab != null) {
+        AlertDialog(
+            onDismissRequest = { pendingTab = null },
+            title = { Text("Abandon quiz?", color = Color(0xFFFFFFFF)) },
+            text = { Text("Your progress will be lost.", color = Color(0xFF8899AA)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    val target = pendingTab!!
+                    pendingTab = null
+                    navController.navigate(target.route) {
+                        popUpTo("movies") { saveState = false }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }) {
+                    Text("Leave", color = Color(0xFFE74C3C))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingTab = null }) {
+                    Text("Keep playing", color = Color(0xFF00E054))
+                }
+            },
+            containerColor = Color(0xFF22272E),
+        )
+    }
+
     Scaffold(
         containerColor = BgDark,
         bottomBar = {
@@ -90,10 +124,20 @@ fun MoviesNavigation() {
                             selected = selected,
                             onClick = {
                                 if (!selected) {
-                                    navController.navigate(tab.route) {
-                                        popUpTo("movies") { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
+                                    if (currentRoute == BottomTab.Quiz.route) {
+                                        pendingTab = tab
+                                    } else if (tab == BottomTab.Quiz) {
+                                        navController.navigate("quiz") {
+                                            popUpTo("movies") { saveState = true }
+                                            launchSingleTop = false
+                                            restoreState = false
+                                        }
+                                    } else {
+                                        navController.navigate(tab.route) {
+                                            popUpTo("movies") { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
                                     }
                                 }
                             },
@@ -182,7 +226,12 @@ fun MoviesNavigation() {
                             popUpTo("quiz") { inclusive = true }
                         }
                     },
-                    onNavigateBack = { navController.navigateUp() },
+                    onNavigateBack = {
+                        navController.navigate("movies") {
+                            popUpTo("quiz") { inclusive = true; saveState = false }
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
 

@@ -31,13 +31,10 @@ class QuizViewModel(
 
     private var timerJob: Job? = null
 
-    init {
-        generateQuiz()
-    }
-
     fun setEvent(event: QuizEvent) {
         viewModelScope.launch {
             when (event) {
+                QuizEvent.StartQuiz -> generateQuiz()
                 is QuizEvent.SelectAnswer -> onAnswerSelected(event.answer)
                 QuizEvent.ShowAbandonDialog -> setState { copy(showAbandonDialog = true) }
                 QuizEvent.DismissAbandonDialog -> setState { copy(showAbandonDialog = false) }
@@ -52,7 +49,7 @@ class QuizViewModel(
 
     private fun generateQuiz() {
         viewModelScope.launch {
-            setState { copy(isGenerating = true) }
+            setState { copy(isNotStarted = false, isGenerating = true) }
             val generator = QuizGenerator(appDatabase.movieDao())
             if (!generator.canStart()) {
                 setState { copy(isGenerating = false, notEnoughMovies = true) }

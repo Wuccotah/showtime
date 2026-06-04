@@ -1,7 +1,8 @@
 package rs.edu.raf.rma.quiz
 
 data class QuizState(
-    val isGenerating: Boolean = true,
+    val isNotStarted: Boolean = true,
+    val isGenerating: Boolean = false,
     val notEnoughMovies: Boolean = false,
     val questions: List<QuizQuestion> = emptyList(),
     val currentIndex: Int = 0,
@@ -22,6 +23,7 @@ data class QuizState(
 }
 
 sealed class QuizEvent {
+    data object StartQuiz : QuizEvent()
     data class SelectAnswer(val answer: String) : QuizEvent()
     data object ShowAbandonDialog : QuizEvent()
     data object DismissAbandonDialog : QuizEvent()

@@ -28,7 +28,7 @@ import rs.edu.raf.rma.db.WatchlistEntity
         WatchlistEntity::class,
         QuizSessionEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 @ConstructedBy(AppDatabaseConstructor::class)

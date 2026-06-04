@@ -121,12 +121,12 @@ class MovieRepositoryImpl(
     override suspend fun toggleFavorite(movieId: String, add: Boolean) {
         if (add) {
             dao.insertFavorite(FavoriteEntity(movieId))
-            // runCatching { moviesApi.addFavorite(movieId) }
-            //     .onFailure { dao.deleteFavorite(movieId) }
+            runCatching { moviesApi.addFavorite(movieId) }
+                .onFailure { dao.deleteFavorite(movieId) }
         } else {
             dao.deleteFavorite(movieId)
-            // runCatching { moviesApi.removeFavorite(movieId) }
-            //     .onFailure { dao.insertFavorite(FavoriteEntity(movieId)) }
+            runCatching { moviesApi.removeFavorite(movieId) }
+                .onFailure { dao.insertFavorite(FavoriteEntity(movieId)) }
         }
     }
 
@@ -151,12 +151,12 @@ class MovieRepositoryImpl(
     override suspend fun toggleWatchlist(movieId: String, add: Boolean) {
         if (add) {
             dao.insertWatchlist(WatchlistEntity(movieId))
-            // runCatching { moviesApi.addToWatchlist(movieId) }
-            //     .onFailure { dao.deleteWatchlist(movieId) }
+            runCatching { moviesApi.addToWatchlist(movieId) }
+                .onFailure { dao.deleteWatchlist(movieId) }
         } else {
             dao.deleteWatchlist(movieId)
-            // runCatching { moviesApi.removeFromWatchlist(movieId) }
-            //     .onFailure { dao.insertWatchlist(WatchlistEntity(movieId)) }
+            runCatching { moviesApi.removeFromWatchlist(movieId) }
+                .onFailure { dao.insertWatchlist(WatchlistEntity(movieId)) }
         }
     }
 
